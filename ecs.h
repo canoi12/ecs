@@ -39,6 +39,11 @@ extern "C" {
 ECS_API ecs_world_t* ecs_create(int entities, int components, int systems);
 ECS_API void ecs_destroy(ecs_world_t* w);
 
+ECS_API void ecs_clear(ecs_world_t* w);
+ECS_API void ecs_clear_entities(ecs_world_t* w);
+ECS_API void ecs_clear_components(ecs_world_t* w);
+ECS_API void ecs_clear_systems(ecs_world_t* w);
+
 ECS_API void ecs_update(ecs_world_t* w);
 // ECS_API void ecs_run_systems(ecs_world_t* w, int type);
 
@@ -173,6 +178,26 @@ void ecs_destroy(ecs_world_t* w) {
     }
     ECS_FREE(w->systems);
     ECS_FREE(w);
+}
+
+void ecs_clear_entities(ecs_world_t* w) {
+    if (!w) return;
+    for (int i = 0; i < w->entity_top; i++) {
+        ecs_entity_internal_t* ent = &(w->entities[i]);
+        if (ent->enabled) {
+            ent->
+        }
+    }
+    for (int = 0; i < w->max_components; i++) {
+        ecs_component_pool_t* pool = &(w->components[i]);
+        if (pool->count > 0) {
+            memset(pool->enabled, 0, sizeof(char) * (pool->count / 8));
+        }
+    }
+    for (int i = 0; i < w->system_top; i++) {
+        ecs_system_t* sys = &(w->systems[i]);
+        if (sys->enabled) sys->filter.entities_count = 0;
+    }
 }
 
 void ecs_update(ecs_world_t* w) {
