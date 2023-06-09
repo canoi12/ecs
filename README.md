@@ -71,6 +71,6 @@ int main(int argc, char** argv) {
 
 I'm using other libs as reference, so it's valid to check out if you want a more stable code in your project:
 
-- [https://github.com/soulfoam/ecs](ecs)
-- [https://github.com/SanderMertens/flecs](flecs)
-- [https://github.com/skypjack/entt](entt)
+- [ecs](https://github.com/soulfoam/ecs)
+- [flecs](https://github.com/SanderMertens/flecs)
+- [entt](https://github.com/skypjack/entt)
