@@ -67,7 +67,7 @@ struct Canvas {
 void set_canvas_system(ecs_filter_t* filter) {
     ecs_world_t* w = filter->world;
     for (int i = 0; i < filter->entities_count; i++) {
-        struct Canvas* canvas = ecs_get_component(w, filter->entities[i], CANVAS_COMPONENT);
+        struct Canvas* canvas = ecs_entity_get_component(w, filter->entities[i], CANVAS_COMPONENT);
         SDL_SetRenderTarget(render, canvas->target);
         SDL_SetRenderDrawColor(render, 75, 125, 125, 255);
         SDL_RenderClear(render);
@@ -77,7 +77,7 @@ void set_canvas_system(ecs_filter_t* filter) {
 void unset_canvas_system(ecs_filter_t* filter) {
     ecs_world_t* w = filter->world;
     for (int i = 0; i < filter->entities_count; i++) {
-        struct Canvas* canvas = ecs_get_component(w, filter->entities[i], CANVAS_COMPONENT);
+        struct Canvas* canvas = ecs_entity_get_component(w, filter->entities[i], CANVAS_COMPONENT);
         SDL_SetRenderTarget(render, NULL);
     }
 }
@@ -85,7 +85,7 @@ void unset_canvas_system(ecs_filter_t* filter) {
 void draw_canvas_system(ecs_filter_t* filter) {
     ecs_world_t* w = filter->world;
     for (int i = 0; i < filter->entities_count; i++) {
-        struct Canvas* canvas = ecs_get_component(w, filter->entities[i], CANVAS_COMPONENT);
+        struct Canvas* canvas = ecs_entity_get_component(w, filter->entities[i], CANVAS_COMPONENT);
         SDL_RenderCopy(render, canvas->target, NULL, NULL);
     }
 }
@@ -93,9 +93,9 @@ void draw_canvas_system(ecs_filter_t* filter) {
 void input_system(ecs_filter_t* filter) {
     ecs_world_t* w = filter->world;
     for (int i = 0; i < filter->entities_count; i++) {
-        struct Kinematic* k = ecs_get_component(w, filter->entities[i], KINEMATIC_COMPONENT);
-        char* input = ecs_get_component(w, filter->entities[i], INPUT_COMPONENT);
-        char* tag = ecs_get_component(w, filter->entities[i], TAG_COMPONENT);
+        struct Kinematic* k = ecs_entity_get_component(w, filter->entities[i], KINEMATIC_COMPONENT);
+        char* input = ecs_entity_get_component(w, filter->entities[i], INPUT_COMPONENT);
+        char* tag = ecs_entity_get_component(w, filter->entities[i], TAG_COMPONENT);
 
         if (*tag == TAG_PLAYER) {
             if (keys[SDL_SCANCODE_LEFT]) k->velocity.x = -1;
@@ -108,8 +108,8 @@ void input_system(ecs_filter_t* filter) {
 void move_system(ecs_filter_t* filter) {
     ecs_world_t* w = filter->world;
     for (int i = 0; i < filter->entities_count; i++) {
-        struct Transform* t = ecs_get_component(w, filter->entities[i], TRANSFORM_COMPONENT);
-        struct Kinematic* k = ecs_get_component(w, filter->entities[i], KINEMATIC_COMPONENT);
+        struct Transform* t = ecs_entity_get_component(w, filter->entities[i], TRANSFORM_COMPONENT);
+        struct Kinematic* k = ecs_entity_get_component(w, filter->entities[i], KINEMATIC_COMPONENT);
 
         t->position.x += k->velocity.x * (delta * k->speed);
         t->position.y += k->velocity.y * (delta * k->speed);
@@ -120,8 +120,8 @@ void render_system(ecs_filter_t* filter) {
     ecs_world_t* w = filter->world;
     for (int i = 0; i < filter->entities_count; i++) {
         ecs_entity_t e = filter->entities[i];
-        struct Transform* t = ecs_get_component(w, e, TRANSFORM_COMPONENT);
-        struct Render* r = ecs_get_component(w, e, RENDER_COMPONENT);
+        struct Transform* t = ecs_entity_get_component(w, e, TRANSFORM_COMPONENT);
+        struct Render* r = ecs_entity_get_component(w, e, RENDER_COMPONENT);
         SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
         SDL_Rect rect;
         rect.x = t->position.x;
@@ -155,18 +155,18 @@ int main(int argc, char** argv) {
     ecs_world_t* w = ecs_create(1000, COMPONENTS_COUNT, 32);
     ecs_register_component(w, TRANSFORM_COMPONENT, sizeof(struct Transform), 128);
     ecs_register_component(w, KINEMATIC_COMPONENT, sizeof(struct Kinematic), 128);
-    ecs_register_component(w, RENDER_COMPONENT, sizeof(struct Render), 1000);
+    ecs_register_component(w, RENDER_COMPONENT, sizeof(struct Render), 256);
     ecs_register_component(w, INPUT_COMPONENT, sizeof(char), 24);
-    ecs_register_component(w, TAG_COMPONENT, sizeof(char), 1000);
+    ecs_register_component(w, TAG_COMPONENT, sizeof(char), 128);
     ecs_register_component(w, SPRITE_COMPONENT, sizeof(struct Sprite), 256);
     ecs_register_component(w, CANVAS_COMPONENT, sizeof(struct Canvas), 2);
 
-    ecs_register_system(w, input_system, INPUT_SYSTEM_MASK, SYSTEM_UPDATE);
-    ecs_register_system(w, move_system, MOVE_SYSTEM_MASK, SYSTEM_UPDATE);
-    ecs_register_system(w, set_canvas_system, CANVAS_SYSTEM_MASK, SYSTEM_UPDATE);
-    ecs_register_system(w, render_system, RENDER_SYSTEM_MASK, SYSTEM_UPDATE);
-    ecs_register_system(w, unset_canvas_system, CANVAS_SYSTEM_MASK, SYSTEM_UPDATE);
-    ecs_register_system(w, draw_canvas_system, CANVAS_SYSTEM_MASK, SYSTEM_UPDATE);
+    ecs_register_system(w, input_system, INPUT_SYSTEM_MASK);
+    ecs_register_system(w, move_system, MOVE_SYSTEM_MASK);
+    ecs_register_system(w, set_canvas_system, CANVAS_SYSTEM_MASK);
+    ecs_register_system(w, render_system, RENDER_SYSTEM_MASK);
+    ecs_register_system(w, unset_canvas_system, CANVAS_SYSTEM_MASK);
+    ecs_register_system(w, draw_canvas_system, CANVAS_SYSTEM_MASK);
 
     ecs_entity_t e = ecs_create_entity(w);
     struct Transform t;
@@ -180,26 +180,26 @@ int main(int argc, char** argv) {
         .velocity = { 0, 0 }
     };
 
-    ecs_set_component(w, e, TRANSFORM_COMPONENT, &t);
-    ecs_set_component(w, e, RENDER_COMPONENT, &r);
-    ecs_set_component(w, e, KINEMATIC_COMPONENT, &k);
-    ecs_set_component(w, e, INPUT_COMPONENT, NULL);
+    ecs_entity_set_component(w, e, TRANSFORM_COMPONENT, &t);
+    ecs_entity_set_component(w, e, RENDER_COMPONENT, &r);
+    ecs_entity_set_component(w, e, KINEMATIC_COMPONENT, &k);
+    ecs_entity_set_component(w, e, INPUT_COMPONENT, NULL);
     char tag = TAG_PLAYER;
-    ecs_set_component(w, e, TAG_COMPONENT, &tag);
+    ecs_entity_set_component(w, e, TAG_COMPONENT, &tag);
 
     e = ecs_create_entity(w);
     t.position.x = 64;
     t.position.y = 64;
-    ecs_set_component(w, e, TRANSFORM_COMPONENT, &t);
-    ecs_set_component(w, e, RENDER_COMPONENT, &r);
-    ecs_set_component(w, e, KINEMATIC_COMPONENT, &k);
+    ecs_entity_set_component(w, e, TRANSFORM_COMPONENT, &t);
+    ecs_entity_set_component(w, e, RENDER_COMPONENT, &r);
+    ecs_entity_set_component(w, e, KINEMATIC_COMPONENT, &k);
     tag = TAG_ENEMY;
-    ecs_set_component(w, e, TAG_COMPONENT, &tag);
+    ecs_entity_set_component(w, e, TAG_COMPONENT, &tag);
 
     e = ecs_create_entity(w);
     struct Canvas canvas;
     canvas.target = SDL_CreateTexture(render, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 320, 190);
-    ecs_set_component(w, e, CANVAS_COMPONENT, &canvas);
+    ecs_entity_set_component(w, e, CANVAS_COMPONENT, &canvas);
 
     double last = SDL_GetTicks();
 
@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
         SDL_SetRenderDrawColor(render, 0, 0, 0, 0);
         SDL_RenderClear(render);
 
-        ecs_run_systems(w, SYSTEM_UPDATE);
+        ecs_update(w);
 
         SDL_RenderPresent(render);
     }

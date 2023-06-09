@@ -1,2 +1,4 @@
 build/
 ecs
+sdl2
+.vscode/
