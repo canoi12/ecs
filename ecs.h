@@ -104,11 +104,12 @@ struct ecs_world_t {
     ecs_filter_t filter;
 };
 
-static void update_filters(ecs_world_t* w) {
+static void update_filters(ecs_world_t* w, int comp) {
     for (int i = 0; i < w->system_top; i++) {
         ecs_system_t* sys = &(w->systems[i]);
         ecs_filter_t* filter = &(sys->filter);
         filter->world = w;
+        if (!(sys->mask & (1 << comp))) continue;
         sys->filter.entities_count = 0;
         for (int e = 0; e < w->entity_top; e++) {
             ecs_entity_internal_t* ent = &(w->entities[e]);
@@ -328,7 +329,7 @@ void ecs_entity_set_component(ecs_world_t* w, ecs_entity_t e, int comp, void* da
     char* comp_data = ((char*)pool->data) + (pool->size * i);
     if (data) memcpy(comp_data, data, pool->size);
     ent->mask |= (1 << comp);
-    update_filters(w);
+    update_filters(w, comp);
 }
 
 void* ecs_entity_get_component(ecs_world_t* w, ecs_entity_t e, int comp) {
@@ -349,7 +350,7 @@ void ecs_entity_remove_component(ecs_world_t* w, ecs_entity_t e, int comp) {
     ee->mask &= ~(1 << comp);
     enable_component(w, comp, ee->components[comp], 0);
     ee->components[comp] = -1;
-    update_filters(w);
+    update_filters(w, comp);
 }
 
 #endif /* ECS_IMPLEMENTATION */
