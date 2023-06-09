@@ -1,8 +1,3 @@
-# ecs
-Single header ECS lib
-
-```c
-
 #define ECS_IMPLEMENTATION
 #include "ecs.h"
 
@@ -33,6 +28,7 @@ void move_system(ecs_filter_t* filter) {
 
         t->position.x += k->velocity.x * (0.001 * k->speed);
         t->position.y += k->velocity.y * (0.001 * k->speed);
+        printf("Position: %f %f\n", t->position.x, t->position.y);
     }
 }
 
@@ -60,17 +56,8 @@ int main(int argc, char** argv) {
     ecs_entity_set_component(w, e, KINEMATIC_COMPONENT, &k);
 
 
-    while (1) ecs_update(w);
+    ecs_update(w);
 
     ecs_destroy(w);
     return 0;
 }
-
-```
-
-
-I'm using other libs as reference, so it's valid to check out if you want a more stable code in your project:
-
-- [https://github.com/soulfoam/ecs](ecs)
-- [https://github.com/SanderMertens/flecs](flecs)
-- [https://github.com/skypjack/entt](entt)
