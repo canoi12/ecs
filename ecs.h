@@ -185,10 +185,10 @@ void ecs_clear_entities(ecs_world_t* w) {
     for (int i = 0; i < w->entity_top; i++) {
         ecs_entity_internal_t* ent = &(w->entities[i]);
         if (ent->enabled) {
-            ent->
+            ent->enabled = 0;
         }
     }
-    for (int = 0; i < w->max_components; i++) {
+    for (int i = 0; i < w->max_components; i++) {
         ecs_component_pool_t* pool = &(w->components[i]);
         if (pool->count > 0) {
             memset(pool->enabled, 0, sizeof(char) * (pool->count / 8));
