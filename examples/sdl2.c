@@ -1,3 +1,4 @@
+#include <SDL2/SDL_video.h>
 #define ECS_IMPLEMENTATION
 #include "ecs.h"
 
@@ -203,8 +204,13 @@ int main(int argc, char** argv) {
 
     double last = SDL_GetTicks();
 
-    while (ev.type != SDL_QUIT) {
-        while (SDL_PollEvent(&ev));
+    int running = 1;
+    while (running) {
+        while (SDL_PollEvent(&ev)) {
+            if (ev.type == SDL_QUIT ||
+            (ev.type == SDL_WINDOWEVENT && ev.window.type == SDL_WINDOWEVENT_CLOSE))
+                running = 0;
+        }
         double current = SDL_GetTicks();
         delta = (current - last) / 1000.f;
         last = current;

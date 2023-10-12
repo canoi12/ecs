@@ -2,3 +2,5 @@ build/
 ecs
 sdl2
 .vscode/
+.cache/
+*.json
